@@ -21,23 +21,29 @@ export default function PassportPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, full_name, sector, bio, hourly_rate, is_verified')
-        .eq('id', params.id)
-        .single();
+  const fetchProfile = async () => {
+    const id = params?.id;
 
-      if (data) setProfile(data);
-      setLoading(false);
-    };
+    if (!id) return;
 
-    if (params?.id) fetchProfile();
-  }, [params?.id]);
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, full_name, sector, bio, hourly_rate, is_verified')
+      .eq('id', id)
+      .single();
+
+    if (data) setProfile(data);
+    setLoading(false);
+  };
+
+  fetchProfile();
+}, [params?.id]);
 
 
 
   const handlePayment = async () => {
+    if (!profile) return;
+
     const res = await fetch('/api/pay', {
       method: 'POST',
       body: JSON.stringify({
