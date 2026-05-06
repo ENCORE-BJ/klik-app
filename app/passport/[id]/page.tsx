@@ -21,42 +21,37 @@ export default function PassportPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const fetchProfile = async () => {
-    const id = params?.id;
+    const fetchProfile = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, full_name, sector, bio, hourly_rate, is_verified')
+        .eq('id', params.id)
+        .single();
 
-    if (!id) return;
+      if (data) setProfile(data);
+      setLoading(false);
+    };
 
-    const { data } = await supabase
-      .from('profiles')
-      .select('id, full_name, sector, bio, hourly_rate, is_verified')
-      .eq('id', id)
-      .single();
-
-    if (data) setProfile(data);
-    setLoading(false);
-  };
-
-  fetchProfile();
-}, [params?.id]);
+    if (params?.id) fetchProfile();
+  }, [params?.id]);
 
 
 
   const handlePayment = async () => {
-  if (!profile) return;
+    // 1. The Guard Clause: If profile is null, stop immediately.
+    if (!profile) return;
 
-  const res = await fetch('/api/pay', {
-    method: 'POST',
-    body: JSON.stringify({
-      amount: profile.hourly_rate ?? 0,
-      phone: '254...',
-      businessName: profile.full_name ?? '',
-    }),
-  });
+    const res = await fetch('/api/pay', {
+      method: 'POST',
+      body: JSON.stringify({
+        amount: profile.hourly_rate,
+        phone: '254...',
+        businessName: profile.full_name,
+      }),
+    });
 
-  if (res.ok) {
-    alert('Payment request sent to your device.');
-  }
-};
+    if (res.ok) alert('Payment request sent to your device.');
+  };
 
   const copyLink = () => {
     navigator.clipboard.writeText(window.location.href);
