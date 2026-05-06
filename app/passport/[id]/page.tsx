@@ -22,6 +22,8 @@ export default function PassportPage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
+      if (!params?.id) return;
+      
       const { data } = await supabase
         .from('profiles')
         .select('id, full_name, sector, bio, hourly_rate, is_verified')
@@ -32,32 +34,31 @@ export default function PassportPage() {
       setLoading(false);
     };
 
-    if (params?.id) fetchProfile();
+    fetchProfile();
   }, [params?.id]);
 
-
-
   const handlePayment = async () => {
-  // 1. ADD THIS GUARD: If there's no profile, exit the function immediately.
-  if (!profile) {
-    console.error("No profile found to process payment.");
-    return;
-  }
+    // Safety Guard for TypeScript
+    if (!profile) {
+      console.error("Payment failed: Node profile not loaded.");
+      return;
+    }
 
-  const res = await fetch('/api/pay', {
-    method: 'POST',
-    body: JSON.stringify({
-      // 2. TypeScript is now happy because it knows 'profile' is not null here.
-      amount: profile.hourly_rate,
-      phone: "254...", // Collected from the visitor
-      businessName: profile.full_name
-    })
-  });
+    try {
+      const res = await fetch('/api/pay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: profile.hourly_rate,
+          phone: '254...', // In production, replace with input value
+          businessName: profile.full_name,
+        }),
+      });
 
-  if (res.ok) alert("Payment request sent to your device.");
-};
-
-    if (res.ok) alert('Payment request sent to your device.');
+      if (res.ok) alert("Payment request sent to your device.");
+    } catch (error) {
+      console.error("Payment Error:", error);
+    }
   };
 
   const copyLink = () => {
@@ -66,11 +67,19 @@ export default function PassportPage() {
   };
 
   if (loading) {
-    return <div className="p-20 text-xs uppercase tracking-[0.3em]">Loading Passport...</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white p-20 text-xs uppercase tracking-[0.3em]">
+        Loading Passport...
+      </div>
+    );
   }
 
   if (!profile) {
-    return <div className="p-20 text-xs uppercase tracking-[0.3em]">Profile Not Found</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white p-20 text-xs uppercase tracking-[0.3em]">
+        Profile Not Found
+      </div>
+    );
   }
 
   return (
@@ -80,8 +89,8 @@ export default function PassportPage() {
           <div className="flex items-center justify-between">
             <p className="text-[10px] uppercase tracking-[0.3em] text-gray-500 font-bold">Node Passport</p>
             <div className="flex items-center gap-2 text-gray-400">
-              <ArrowLeft className="h-4 w-4" />
-              <Share2 className="h-4 w-4" />
+              <button onClick={() => window.history.back()}><ArrowLeft className="h-4 w-4" /></button>
+              <button onClick={copyLink}><Share2 className="h-4 w-4" /></button>
             </div>
           </div>
           <h1 className="text-3xl font-black uppercase mt-3">{profile.full_name}</h1>
@@ -107,7 +116,6 @@ export default function PassportPage() {
                 >
                   💸 Pay {profile.hourly_rate} KES / Hr
                 </button>
-
               </div>
             </div>
 
@@ -147,15 +155,15 @@ export default function PassportPage() {
             {profile.is_verified ? 'Node Active: Nairobi' : 'Node Pending Auth'}
           </p>
         </div>
+      </div>
 
-
+      <div className="max-w-2xl mx-auto">
         <button
           onClick={copyLink}
           className="mt-8 w-full border border-gray-200 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all flex items-center justify-center gap-2"
         >
           <Share2 size={12} /> Share Node Passport
         </button>
-
       </div>
     </main>
   );
