@@ -42,18 +42,21 @@ export default function PassportPage() {
 
 
   const handlePayment = async () => {
-    if (!profile) return;
+  if (!profile) return;
 
-    const res = await fetch('/api/pay', {
-      method: 'POST',
-      body: JSON.stringify({
-        amount: profile.hourly_rate,
-        phone: '254...',
-        businessName: profile.full_name,
-      }),
-    });
-    if (res.ok) alert('Payment request sent to your device.');
-  };
+  const res = await fetch('/api/pay', {
+    method: 'POST',
+    body: JSON.stringify({
+      amount: profile.hourly_rate ?? 0,
+      phone: '254...',
+      businessName: profile.full_name ?? '',
+    }),
+  });
+
+  if (res.ok) {
+    alert('Payment request sent to your device.');
+  }
+};
 
   const copyLink = () => {
     navigator.clipboard.writeText(window.location.href);
