@@ -38,17 +38,24 @@ export default function PassportPage() {
 
 
   const handlePayment = async () => {
-    // 1. The Guard Clause: If profile is null, stop immediately.
-    if (!profile) return;
+  // 1. ADD THIS GUARD: If there's no profile, exit the function immediately.
+  if (!profile) {
+    console.error("No profile found to process payment.");
+    return;
+  }
 
-    const res = await fetch('/api/pay', {
-      method: 'POST',
-      body: JSON.stringify({
-        amount: profile.hourly_rate,
-        phone: '254...',
-        businessName: profile.full_name,
-      }),
-    });
+  const res = await fetch('/api/pay', {
+    method: 'POST',
+    body: JSON.stringify({
+      // 2. TypeScript is now happy because it knows 'profile' is not null here.
+      amount: profile.hourly_rate,
+      phone: "254...", // Collected from the visitor
+      businessName: profile.full_name
+    })
+  });
+
+  if (res.ok) alert("Payment request sent to your device.");
+};
 
     if (res.ok) alert('Payment request sent to your device.');
   };
