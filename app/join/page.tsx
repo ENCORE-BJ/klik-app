@@ -50,8 +50,9 @@ export default function JoinPage() {
         error,
       } = await supabase.auth.getSession();
 
+      // FIXED: Redirecting to '/login' because '/auth' does not exist in your routes
       if (error || !session?.user) {
-        router.replace('/auth');
+        router.replace('/login'); 
         return;
       }
 
@@ -109,7 +110,7 @@ export default function JoinPage() {
 
     if (!userId) {
       setErrorMessage('Your session expired. Please sign in again.');
-      router.replace('/auth');
+      router.replace('/login');
       return;
     }
 
